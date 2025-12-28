@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SSR Tennis Tournament 2026</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;
+ background:black;
+ color:white;
+ font-family:Arial,Helvetica,sans-serif;
+ overflow:hidden;
+}
+
+/* HEADER */
+.header{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;
+  padding:12px 30px;
+  font-size:3vw;
+  font-weight:900;
+  color:#00ffd5;
+  border-bottom:4px solid #00ffd5;
+  text-shadow:0 0 20px #00ffd5;
+}
+.header div:nth-child(2){text-align:center;} /* center title */
+.balls{
+  font-size:3.5vw;
+  text-align:center;
+}
+
+/* COURT */
+.main{display:flex;height:65vh}
+.team{
+ flex:1;
+ border:4px solid #00ffd5;
+ margin:8px;
+ padding:10px;
+ text-align:center;
+ transition:all .6s ease;
+}
+.name{font-size:4vw;font-weight:900;color:yellow;cursor:pointer}
+.server{font-size:2.2vw;color:red;font-weight:bold}
+.score{
+  font-size:10vw; /* reduced from 15vw for better GOLDEN POINT fit */
+  font-weight:900;
+  cursor:pointer;
+  white-space:pre-line;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  height:60%; /* take most of the team box */
+  line-height:1; /* tighter line height for multi-line text */
+}
+
+.games{font-size:2.8vw;color:#00ffd5;font-weight:bold}
+
+/* EFFECTS */
+.golden{
+ color:gold;
+ animation:wobble .6s infinite alternate;
+ text-shadow:0 0 15px gold,0 0 50px orange;
+}
+@keyframes wobble{from{transform:rotate(-2deg)}to{transform:rotate(2deg)}}
+
+.winner{
+ background:#003300;
+ box-shadow:0 0 80px #00ff00;
+}
+
+.winnersText{
+ font-size:10vw; /* reduced from 4.5vw */
+ color:gold;
+ animation:flash 1s infinite alternate;
+ text-shadow:0 0 20px gold,0 0 60px orange;
+}
+@keyframes flash{from{opacity:.6}to{opacity:1}}
+
+/* CONTROLS */
+.controls{text-align:center}
+button{
+ font-size:1.4vw;
+ padding:6px 14px;
+ font-weight:bold;
+ cursor:pointer;
+}
+#goldenGameBanner{
+ font-size:2.5vw;
+ font-weight:900;
+ color:gold;
+ display:none;
+ animation:flash .7s infinite alternate;
+ text-shadow:0 0 25px gold;
+}
+.nextMatch{
+ font-size:2.2vw;
+ color:#00ffd5;
+ margin-top:6px;
+}
+
+/* BOTTOM BUTTONS */
+.bottomLeft{
+ position:fixed;
+ bottom:8px;
+ left:8px;
+ display:flex;
+ gap:8px;
+}
+.forceNext{
+ position:fixed;
+ bottom:8px;
+ right:8px;
+ font-size:1.2vw;
+ background:red;
+ color:white;
+ border:none;
+}
+
+/* TIMER OVERLAY (RIGHT HALF ONLY) */
+#timerOverlay{
+ position:fixed;
+ top:0;
+ right:0;
+ width:50vw;
+ height:100vh;
+ background:black;
+ display:none;
+ flex-direction:column;
+ align-items:center;
+ justify-content:center;
+ border-left:4px solid #00ffd5;
+ z-index:100;
+}
+#timerDisplay{
+ font-size:10vw;
+ font-weight:900;
+ color:#00ffd5;
+ text-shadow:0 0 40px #00ffd5;
+}
+#timerOverlay button{
+ margin-top:20px;
+ font-size:2vw;
+}
+
+/* TROPHY */
+#trophy{
+ position:fixed;
+ top:50%;
+ left:50%;
+ transform:translate(-50%,-50%);
+ font-size:14vw;
+ display:none;
+ animation:float 2s infinite alternate;
+ z-index:90;
+}
+@keyframes float{
+ from{transform:translate(-50%,-55%)}
+ to{transform:translate(-50%,-45%)}
+}
+
+/* CONFETTI */
+canvas{
+ position:fixed;
+ top:0;
+ left:0;
+ pointer-events:none;
+ z-index:80;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+ <div class="balls">🎾 🎾 🎾 🎾</div>
+ <div>SSR Tennis Tournament 2026</div>
+ <div class="balls">🎾 🎾 🎾 🎾</div>
+</div>
+
+<div id="uploadBox" style="text-align:center;padding:6px">
+ <input type="file" accept=".xlsx,.csv" onchange="loadFile(this)">
+</div>
+
+<div class="main" id="court">
+ <div class="team" id="teamA">
+  <div class="name" id="nameA" contenteditable>Team A</div>
+  <div class="server" id="serveA"></div>
+  <div class="score" id="scoreA" onclick="point('A')">0</div>
+  <div class="games">Games: <span id="gamesA">0</span></div>
+ </div>
+
+ <div class="team" id="teamB">
+  <div class="name" id="nameB" contenteditable>Team B</div>
+  <div class="server" id="serveB"></div>
+  <div class="score" id="scoreB" onclick="point('B')">0</div>
+  <div class="games">Games: <span id="gamesB">0</span></div>
+ </div>
+</div>
+
+<div class="controls">
+ <div id="goldenGameBanner">✨ FINAL DECIDING GAME ✨</div>
+ <button onclick="swapSides()">Swap Sides</button>
+ <div class="nextMatch" id="nextMatch"></div>
+</div>
+
+<div class="bottomLeft">
+ <button onclick="resetMatch()">Reset</button>
+ <button onclick="startTimer()">Timer</button>
+</div>
+
+<button class="forceNext" onclick="forceNextMatch()">Next Match</button>
+
+<div id="timerOverlay">
+ <div id="timerDisplay">60</div>
+ <button onclick="stopTimer()">STOP</button>
+</div>
+
+<div id="trophy">🏆</div>
+<canvas id="confetti"></canvas>
+
+<script>
+const pts=["0","15","30","40"];
+const opp=t=>t==="A"?"B":"A";
+
+let state={pA:0,pB:0,gA:0,gB:0,mode:"NORMAL",adv:null,serve:null};
+let matches=[],matchIndex=0;
+
+/* POINT LOGIC */
+function point(t){
+ if(state.mode==="MATCH_OVER"){
+  stopConfetti();
+  loadMatch(matchIndex+1);
+  return;
+ }
+ if(state.mode==="GAME"){nextGame();return;}
+
+ if(state.mode==="NORMAL"){
+  if(state.pA===3 && state.pB===3){
+   state.mode="ADV";
+   state.adv=t;
+  }else{
+   state["p"+t]++;
+   if(state["p"+t]===4){
+    state.mode="GAME";
+    state.adv=t;
+   }
+  }
+  render();return;
+ }
+
+ if(state.mode==="ADV"){
+  if(t===state.adv){state.mode="GAME";}
+  else{state.mode="GOLDEN";}
+  render();return;
+ }
+
+ if(state.mode==="GOLDEN"){
+  state.mode="GAME";
+  state.adv=t;
+  render();
+ }
+}
+
+function nextGame(){
+ state["g"+state.adv]++;
+ state.pA=state.pB=0;
+ state.adv=null;
+ state.serve=opp(state.serve); // switch serve
+
+ if(state.gA===4 && state.gB===4){
+  goldenGameBanner.style.display="block";
+  state.mode="NORMAL";
+ }
+ else if(state.gA===5 || state.gB===5){
+  state.mode="MATCH_OVER";
+  render(); // render final game
+  showWinner();
+  return;
+ } else state.mode="NORMAL";
+
+ render();
+}
+
+function render(){
+ scoreA.classList.remove("golden");
+ scoreB.classList.remove("golden");
+
+ let sa="",sb="";
+ if(state.mode==="NORMAL"){sa=pts[state.pA];sb=pts[state.pB];}
+ else if(state.mode==="ADV"){
+  sa=state.adv==="A"?"Adv":"◉";
+  sb=state.adv==="B"?"Adv":"◉";
+ }
+ else if(state.mode==="GOLDEN"){
+  sa=sb="GOLDEN\nPOINT";
+  scoreA.classList.add("golden");
+  scoreB.classList.add("golden");
+ }
+ else if(state.mode==="GAME"){
+  sa=state.adv==="A"?"GAME":"";
+  sb=state.adv==="B"?"GAME":"";
+ }
+
+ scoreA.innerText=sa;
+ scoreB.innerText=sb;
+
+ gamesA.innerText=state.gA;
+ gamesB.innerText=state.gB;
+
+ // Show tennis ball for serve
+ serveA.innerText = state.serve==="A" ? "🎾" : "";
+ serveB.innerText = state.serve==="B" ? "🎾" : "";
+}
+
+/* WINNER */
+function showWinner(){
+ let w = state.gA > state.gB ? "A" : "B";
+ let l = opp(w);
+
+ // Hide losing team
+ document.getElementById("team" + l).style.display = "none";
+
+ // Expand winning team container
+ document.getElementById("team" + w).style.flex = "1";
+
+ // Set WINNERS text without trophy
+ document.getElementById("score" + w).innerHTML =
+   `<span class="winnersText">WINNERS</span>`;
+ document.getElementById("team" + w).classList.add("winner");
+
+ // Show floating trophy
+ trophy.style.display = "block";
+
+ // Position trophy vertically centered inside winning team
+ let teamRect = document.getElementById("team" + w).getBoundingClientRect();
+ trophy.style.top = (teamRect.top + teamRect.height / 2) + "px";
+ trophy.style.left = (teamRect.left + teamRect.width / 2) + "px";
+
+ // Hide golden game banner
+ goldenGameBanner.style.display = "none";
+
+ startConfetti();
+}
+
+/* TIMER */
+let timerInt;
+function startTimer(){
+ let sec=parseInt(prompt("Seconds","60"));
+ if(!sec)return;
+ timerOverlay.style.display="flex";
+ timerDisplay.innerText=sec;
+ clearInterval(timerInt);
+ timerInt=setInterval(()=>{
+  sec--;
+  timerDisplay.innerText=sec;
+  if(sec<=0)stopTimer();
+ },1000);
+}
+function stopTimer(){
+ clearInterval(timerInt);
+ timerOverlay.style.display="none";
+}
+
+/* CONFETTI */
+const c=document.getElementById("confetti");
+const ctx=c.getContext("2d");
+c.width=innerWidth;
+c.height=innerHeight;
+let confettiInt=null,pieces=[];
+function startConfetti(){
+ if(confettiInt)return;
+ pieces=[...Array(250)].map(()=>({
+  x:Math.random()*c.width,
+  y:Math.random()*c.height,
+  r:Math.random()*6+4,
+  d:Math.random()*4+2
+ }));
+ confettiInt=setInterval(()=>{
+  ctx.clearRect(0,0,c.width,c.height);
+  pieces.forEach(p=>{
+   ctx.fillStyle="gold";
+   ctx.beginPath();
+   ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+   ctx.fill();
+   p.y+=p.d;
+   if(p.y>c.height)p.y=-10;
+  });
+ },30);
+}
+function stopConfetti(){
+ clearInterval(confettiInt);
+ confettiInt=null;
+ ctx.clearRect(0,0,c.width,c.height);
+ trophy.style.display="none";
+}
+
+/* MISC */
+function resetMatch(){
+ stopConfetti();
+ state={pA:0,pB:0,gA:0,gB:0,mode:"NORMAL",adv:null,serve:null};
+ teamA.style.display="";
+ teamB.style.display="";
+ teamA.classList.remove("winner");
+ teamB.classList.remove("winner");
+ goldenGameBanner.style.display="none";
+ render();
+}
+
+function loadFile(input){
+ let r=new FileReader();
+ r.onload=e=>{
+  let wb=XLSX.read(e.target.result,{type:"binary"});
+  matches=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1});
+  loadMatch(0);
+  uploadBox.style.display="none";
+ };
+ r.readAsBinaryString(input.files[0]);
+}
+
+function loadMatch(i){
+ if(!matches[i])return;
+ matchIndex=i;
+ resetMatch();
+ nameA.innerText=matches[i][1];
+ nameB.innerText=matches[i][2];
+ nextMatch.innerText=matches[i+1]
+  ?`NEXT MATCH – ${matches[i+1][0]} | ${matches[i+1][1]} vs ${matches[i+1][2]}`
+  :"NO MORE MATCHES";
+}
+
+function forceNextMatch(){
+ stopConfetti();
+ loadMatch(matchIndex+1);
+}
+
+function swapSides(){
+ let c=document.getElementById("court");
+ c.insertBefore(c.children[1],c.children[0]);
+}
+
+// Clicking on team names sets first serve if not already set
+nameA.addEventListener("click",()=>{ if(!state.serve) { state.serve="A"; render(); } });
+nameB.addEventListener("click",()=>{ if(!state.serve) { state.serve="B"; render(); } });
+
+render();
+</script>
+</body>
+</html>
