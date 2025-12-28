@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>SSR Tennis Tournament 2026</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <style>
@@ -43,10 +43,46 @@ body{
  flex-direction:column;
  transition:all .6s ease;
 }
-.name{font-size:4vw;font-weight:900;color:yellow;cursor:pointer}
-.server{font-size:2.2vw;color:red;font-weight:bold}
 
-/* SCORE – AUTO FILL */
+/* NAME + SERVE */
+.nameRow{
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ gap:12px;
+}
+
+.name{
+ font-size:4vw;
+ font-weight:900;
+ color:yellow;
+ cursor:pointer;
+}
+
+.server{
+ font-size:2.8vw;
+ min-width:3vw;
+ text-align:center;
+ opacity:0;
+}
+
+/* SERVE ANIMATION */
+.server.active{
+ opacity:1;
+ animation:serveBounce 1s infinite alternate, serveGlow 1.2s infinite;
+}
+
+@keyframes serveBounce{
+ from{transform:translateY(0)}
+ to{transform:translateY(-8px)}
+}
+@keyframes serveGlow{
+ 0%{text-shadow:0 0 5px gold}
+ 50%{text-shadow:0 0 25px gold,0 0 40px orange}
+ 100%{text-shadow:0 0 5px gold}
+}
+
+/* SCORE */
 .score{
  flex:1;
  display:flex;
@@ -57,7 +93,6 @@ body{
  cursor:pointer;
  white-space:pre-line;
  padding:10px;
-
  font-size:clamp(6vw,18vw,22vw);
  line-height:1;
 }
@@ -193,16 +228,20 @@ canvas{
 <div class="main" id="court">
 
  <div class="team" id="teamA">
-  <div class="name" id="nameA" contenteditable>Team A</div>
-  <div class="server" id="serveA"></div>
+  <div class="nameRow">
+   <span class="server" id="serveA"></span>
+   <div class="name" id="nameA" contenteditable>Team A</div>
+  </div>
   <div class="score" id="scoreA" onclick="point('A')">0</div>
   <div class="undo" onclick="undoPoint()">➖</div>
   <div class="games">Games: <span id="gamesA">0</span></div>
  </div>
 
  <div class="team" id="teamB">
-  <div class="name" id="nameB" contenteditable>Team B</div>
-  <div class="server" id="serveB"></div>
+  <div class="nameRow">
+   <span class="server" id="serveB"></span>
+   <div class="name" id="nameB" contenteditable>Team B</div>
+  </div>
   <div class="score" id="scoreB" onclick="point('B')">0</div>
   <div class="undo" onclick="undoPoint()">➖</div>
   <div class="games">Games: <span id="gamesB">0</span></div>
@@ -323,8 +362,12 @@ function render(){
  scoreB.innerText=sb;
  gamesA.innerText=state.gA;
  gamesB.innerText=state.gB;
+
  serveA.innerText=state.serve==="A"?"🎾":"";
  serveB.innerText=state.serve==="B"?"🎾":"";
+
+ serveA.classList.toggle("active", state.serve==="A");
+ serveB.classList.toggle("active", state.serve==="B");
 }
 
 /* UNDO */
