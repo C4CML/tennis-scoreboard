@@ -156,14 +156,74 @@ button{
  display:flex;
  gap:8px;
 }
-.forceNext{
+
+/* ICON BUTTONS */
+.iconBtn{
  position:fixed;
- bottom:8px;
- right:8px;
- font-size:1.2vw;
- background:red;
- color:white;
+ bottom:20px;
+ right:20px;
+ font-size:2.5vw;
+ background:gold;
+ color:black;
  border:none;
+ width:55px;
+ height:55px;
+ border-radius:50%;
+ cursor:pointer;
+ box-shadow:0 0 20px gold;
+ margin-left:10px;
+ display:inline-flex;
+ align-items:center;
+ justify-content:center;
+}
+.nextIcon{right:90px;background:red;color:white;box-shadow:0 0 20px red;}
+.resultsIcon{right:20px;}
+
+/* RESULTS OVERLAY */
+#resultsOverlay{
+ position:fixed;
+ top:0;
+ left:0;
+ width:100vw;
+ height:100vh;
+ background:rgba(0,0,0,0.95);
+ display:none;
+ z-index:200;
+ overflow-y:auto;
+ padding:20px;
+}
+.resultsHeader{
+ font-size:4vw;
+ color:gold;
+ text-align:center;
+ margin-bottom:20px;
+ text-shadow:0 0 10px gold;
+}
+.resultsTable{
+ width:100%;
+ border-collapse:collapse;
+ font-size:2.5vw;
+}
+.resultsTable th, .resultsTable td{
+ padding:12px;
+ border:1px solid #00ffd5;
+ text-align:center;
+}
+.resultsTable th{
+ background:#00ffd5;
+ color:black;
+ font-weight:bold;
+}
+.exportBtn, .closeResults{
+ font-size:2.5vw;
+ padding:12px 24px;
+ margin:10px;
+ background:gold;
+ color:black;
+ border:none;
+ cursor:pointer;
+ font-weight:bold;
+ border-radius:5px;
 }
 
 /* TIMER */
@@ -260,11 +320,21 @@ canvas{
  <button onclick="startTimer()">Timer</button>
 </div>
 
-<button class="forceNext" onclick="forceNextMatch()">Next Match</button>
+<button class="iconBtn resultsIcon" onclick="toggleResults()" title="Results">📋</button>
+<button class="iconBtn nextIcon" onclick="confirmNextMatch()" title="Next Match">⏭️</button>
 
 <div id="timerOverlay">
  <div id="timerDisplay">60</div>
  <button onclick="stopTimer()">STOP</button>
+</div>
+
+<div id="resultsOverlay">
+ <div class="resultsHeader">🏆 Tournament Results</div>
+ <table class="resultsTable" id="resultsTable"></table>
+ <div style="text-align:center;">
+  <button class="exportBtn" onclick="exportResults()">Export Results</button>
+  <button class="closeResults" onclick="toggleResults()">Close</button>
+ </div>
 </div>
 
 <div id="trophy">🏆</div>
@@ -277,12 +347,14 @@ const opp=t=>t==="A"?"B":"A";
 let state={pA:0,pB:0,gA:0,gB:0,mode:"NORMAL",adv:null,serve:null};
 let history=[];
 let matches=[],matchIndex=0;
+let results=[];
 
 /* POINT */
 function point(t){
  history.push(JSON.parse(JSON.stringify(state)));
 
  if(state.mode==="MATCH_OVER"){
+  saveResult();
   stopConfetti();
   loadMatch(matchIndex+1);
   return;
@@ -335,6 +407,21 @@ function nextGame(){
  } else state.mode="NORMAL";
 
  render();
+}
+
+/* SAVE RESULT */
+function saveResult(){
+ if(matchIndex < matches.length){
+  let currentMatch = matches[matchIndex];
+  results.push({
+   time: currentMatch[0],
+   teamA: nameA.innerText,
+   teamB: nameB.innerText,
+   scoreA: state.gA,
+   scoreB: state.gB,
+   winner: state.gA > state.gB ? nameA.innerText : nameB.innerText
+  });
+ }
 }
 
 /* RENDER */
@@ -393,6 +480,54 @@ function showWinner(){
  trophy.style.top=r.top+r.height/2+"px";
  goldenGameBanner.style.display="none";
  startConfetti();
+}
+
+/* RESULTS */
+function toggleResults(){
+ let overlay = document.getElementById("resultsOverlay");
+ if(overlay.style.display === "block"){
+  overlay.style.display = "none";
+ } else {
+  renderResults();
+  overlay.style.display = "block";
+ }
+}
+
+function renderResults(){
+ let table = document.getElementById("resultsTable");
+ let html = `
+  <tr>
+   <th>Time</th>
+   <th>Team A</th>
+   <th>Team B</th>
+   <th>Score</th>
+   <th>Winner</th>
+  </tr>
+ `;
+ results.forEach(r => {
+  html += `
+   <tr>
+    <td>${r.time}</td>
+    <td>${r.teamA}</td>
+    <td>${r.teamB}</td>
+    <td>${r.scoreA}-${r.scoreB}</td>
+    <td>${r.winner}</td>
+   </tr>
+  `;
+ });
+ table.innerHTML = html;
+}
+
+/* EXPORT */
+function exportResults(){
+ let wb = XLSX.utils.book_new();
+ let ws_data = [["Time", "Team A", "Team B", "Score", "Winner"]];
+ results.forEach(r => {
+  ws_data.push([r.time, r.teamA, r.teamB, `${r.scoreA}-${r.scoreB}`, r.winner]);
+ });
+ let ws = XLSX.utils.aoa_to_sheet(ws_data);
+ XLSX.utils.book_append_sheet(wb, ws, "Results");
+ XLSX.writeFile(wb, "SSR_Tennis_Results.xlsx");
 }
 
 /* TIMER */
@@ -462,7 +597,16 @@ function loadFile(input){
  let r=new FileReader();
  r.onload=e=>{
   let wb=XLSX.read(e.target.result,{type:"binary"});
-  matches=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1});
+  let rawData=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1});
+  matches=rawData.slice(1).map(row => {
+   let time = row[2];
+   if(typeof time === 'number') {
+    let hours = Math.floor(time * 24);
+    let minutes = Math.floor((time * 24 - hours) * 60);
+    time = `${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')} ${hours >= 12 ? 'PM' : 'AM'}`;
+   }
+   return [time, row[3] || '', row[4] || ''];
+  });
   loadMatch(0);
   uploadBox.style.display="none";
  };
@@ -480,7 +624,13 @@ function loadMatch(i){
   :"NO MORE MATCHES";
 }
 
-function forceNextMatch(){stopConfetti();loadMatch(matchIndex+1);}
+function confirmNextMatch(){
+ if(confirm("Load next match? Current match will be reset.")){
+  stopConfetti();
+  loadMatch(matchIndex+1);
+ }
+}
+
 function swapSides(){
  let c=document.getElementById("court");
  c.insertBefore(c.children[1],c.children[0]);
