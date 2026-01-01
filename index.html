@@ -6,7 +6,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-
 <style>
 *{box-sizing:border-box}
 body{
@@ -17,35 +16,32 @@ body{
  overflow:hidden;
 }
 
-
 /* HEADER */
 .header{
  display:grid;
  grid-template-columns:auto 1fr auto;
  align-items:center;
  padding:12px 30px;
- font-size:2.2vw; /* Reduced from 3vw */
+ font-size:2.2vw;
  font-weight:900;
  color:#000080;
  border-bottom:4px solid #00ffd5;
 }
 .header div:nth-child(2){text-align:center;}
-.balls{font-size:2.8vw} /* Reduced from 3.5vw */
-
+.balls{font-size:2.8vw}
 
 /* COURT */
-.main{display:flex;height:72vh} /* Increased from 65vh */
+.main{display:flex;height:72vh}
 .team{
  flex:1;
  border:4px solid #00ffd5;
  margin:8px;
- padding:16px; /* Increased from 10px */
+ padding:16px;
  text-align:center;
  display:flex;
  flex-direction:column;
  transition:all .6s ease;
 }
-
 
 /* NAME + SERVE */
 .nameRow{
@@ -55,14 +51,12 @@ body{
  gap:12px;
 }
 
-
 .name{
  font-size:5.5vw;
  font-weight:900;
  color:#000080;
  cursor:pointer;
 }
-
 
 .server{
  font-size:2.8vw;
@@ -71,19 +65,16 @@ body{
  opacity:0;
 }
 
-
 /* SERVE ANIMATION */
 .server.active{
  opacity:1;
  animation:serveBounce 1s infinite alternate;
 }
 
-
 @keyframes serveBounce{
  from{transform:translateY(0)}
  to{transform:translateY(-8px)}
 }
-
 
 /* SCORE */
 .score{
@@ -101,7 +92,6 @@ body{
  color:red;
 }
 
-
 /* UNDO */
 .undo{
  font-size:2vw;
@@ -112,9 +102,7 @@ body{
 }
 .undo:hover{transform:scale(1.2);opacity:1}
 
-
 .games{font-size:3.2vw;color:#000080;font-weight:900;text-shadow:1px 1px 2px rgba(0,0,0,0.3);}
-
 
 /* EFFECTS */
 .golden{
@@ -124,7 +112,6 @@ body{
  animation:wobble .6s infinite alternate;
 }
 @keyframes wobble{from{transform:rotate(-2deg)}to{transform:rotate(2deg)}}
-
 
 .winner{
  background:#003300;
@@ -139,9 +126,7 @@ body{
  animation:flash 1s infinite alternate;
 }
 
-
 @keyframes flash{from{opacity:.6}to{opacity:1}}
-
 
 /* CONTROLS */
 .controls{text-align:center}
@@ -160,7 +145,6 @@ button{
 }
 .nextMatch{font-size:2.8vw;color:#000080;font-weight:900;text-shadow:1px 1px 2px rgba(0,0,0,0.3);margin-top:6px}
 
-
 /* BOTTOM */
 .bottomLeft{
  position:fixed;
@@ -169,7 +153,6 @@ button{
  display:flex;
  gap:8px;
 }
-
 
 /* ICON BUTTONS */
 .iconBtn{
@@ -193,53 +176,63 @@ button{
 .nextIcon{right:90px;background:red;color:white;box-shadow:0 0 20px red;}
 .resultsIcon{right:20px;}
 
-
-/* RESULTS OVERLAY */
+/* RESULTS OVERLAY - UPDATED TO WHITE BG WITH RED TEXT */
 #resultsOverlay{
  position:fixed;
  top:0;
  left:0;
  width:100vw;
  height:100vh;
- background:rgba(0,0,0,0.95);
+ background:white;
  display:none;
  z-index:200;
  overflow-y:auto;
  padding:20px;
+ color:red;
 }
 .resultsHeader{
  font-size:4vw;
- color:gold;
+ color:red;
  text-align:center;
  margin-bottom:20px;
+ font-weight:900;
 }
 .resultsTable{
  width:100%;
  border-collapse:collapse;
  font-size:2.5vw;
+ color:red;
 }
 .resultsTable th, .resultsTable td{
  padding:12px;
- border:1px solid #00ffd5;
+ border:2px solid red;
  text-align:center;
+ color:red;
 }
 .resultsTable th{
- background:#00ffd5;
- color:black;
+ background:#ffe6e6;
+ color:red;
  font-weight:bold;
+}
+.resultsTable tr:nth-child(even){
+ background:#fff5f5;
 }
 .exportBtn, .closeResults{
  font-size:2.5vw;
  padding:12px 24px;
  margin:10px;
- background:gold;
- color:black;
+ background:red;
+ color:white;
  border:none;
  cursor:pointer;
  font-weight:bold;
  border-radius:5px;
+ box-shadow:0 4px 10px rgba(0,0,0,0.2);
 }
-
+.exportBtn:hover, .closeResults:hover{
+ background:#cc0000;
+ transform:translateY(-2px);
+}
 
 /* TIMER */
 #timerOverlay{
@@ -280,7 +273,6 @@ button{
  box-shadow:0 4px 15px rgba(0,0,0,0.3);
 }
 
-
 /* TROPHY */
 #trophy{
  position:fixed;
@@ -294,7 +286,6 @@ button{
  to{transform:translate(-50%,-45%)}
 }
 
-
 /* CONFETTI */
 canvas{
  position:fixed;
@@ -306,9 +297,7 @@ canvas{
 </style>
 </head>
 
-
 <body>
-
 
 <div class="header">
  <div class="balls">🎾 🎾 🎾 🎾</div>
@@ -316,14 +305,11 @@ canvas{
  <div class="balls">🎾 🎾 🎾 🎾</div>
 </div>
 
-
 <div id="uploadBox" style="text-align:center;padding:6px">
  <input type="file" accept=".xlsx,.csv" onchange="loadFile(this)">
 </div>
 
-
 <div class="main" id="court">
-
 
  <div class="team" id="teamA">
   <div class="nameRow">
@@ -335,7 +321,6 @@ canvas{
   <div class="games">Games: <span id="gamesA">0</span></div>
  </div>
 
-
  <div class="team" id="teamB">
   <div class="nameRow">
    <span class="server" id="serveB"></span>
@@ -346,9 +331,7 @@ canvas{
   <div class="games">Games: <span id="gamesB">0</span></div>
  </div>
 
-
 </div>
-
 
 <div class="controls">
  <div id="goldenGameBanner">✨ FINAL DECIDING GAME ✨</div>
@@ -356,22 +339,18 @@ canvas{
  <div class="nextMatch" id="nextMatch"></div>
 </div>
 
-
 <div class="bottomLeft">
  <button onclick="resetMatch()">Reset</button>
  <button onclick="startTimer()">Timer</button>
 </div>
 
-
 <button class="iconBtn resultsIcon" onclick="toggleResults()" title="Results">📋</button>
 <button class="iconBtn nextIcon" onclick="confirmNextMatch()" title="Next Match">⏭️</button>
-
 
 <div id="timerOverlay">
  <div id="timerDisplay">45</div>
  <button onclick="stopTimer()">STOP</button>
 </div>
-
 
 <div id="resultsOverlay">
  <div class="resultsHeader">🏆 Tournament Results</div>
@@ -382,26 +361,21 @@ canvas{
  </div>
 </div>
 
-
 <div id="trophy">🏆</div>
 <canvas id="confetti"></canvas>
-
 
 <script>
 const pts=["0","15","30","40"];
 const opp=t=>t==="A"?"B":"A";
-
 
 let state={pA:0,pB:0,gA:0,gB:0,mode:"NORMAL",adv:null,serve:null};
 let history=[];
 let matches=[],matchIndex=0;
 let results=[];
 
-
 /* POINT */
 function point(t){
  history.push(JSON.parse(JSON.stringify(state)));
-
 
  if(state.mode==="MATCH_OVER"){
   saveResult();
@@ -410,9 +384,7 @@ function point(t){
   return;
  }
 
-
  if(state.mode==="GAME"){nextGame();return;}
-
 
  if(state.mode==="NORMAL"){
   if(state.pA===3 && state.pB===3){
@@ -428,13 +400,11 @@ function point(t){
   render();return;
  }
 
-
  if(state.mode==="ADV"){
   if(t===state.adv){state.mode="GAME";}
   else{state.mode="GOLDEN";}
   render();return;
  }
-
 
  if(state.mode==="GOLDEN"){
   state.mode="GAME";
@@ -443,13 +413,11 @@ function point(t){
  }
 }
 
-
 function nextGame(){
  state["g"+state.adv]++;
  state.pA=state.pB=0;
  state.adv=null;
  state.serve=opp(state.serve);
-
 
  if(state.gA===4 && state.gB===4){
   goldenGameBanner.style.display="block";
@@ -462,10 +430,8 @@ function nextGame(){
   return;
  } else state.mode="NORMAL";
 
-
  render();
 }
-
 
 /* SAVE RESULT */
 function saveResult(){
@@ -482,12 +448,10 @@ function saveResult(){
  }
 }
 
-
 /* RENDER */
 function render(){
  scoreA.classList.remove("golden");
  scoreB.classList.remove("golden");
-
 
  let sa="",sb="";
  if(state.mode==="NORMAL"){sa=pts[state.pA];sb=pts[state.pB];}
@@ -505,21 +469,17 @@ function render(){
   sb=state.adv==="B"?"GAME":"";
  }
 
-
  scoreA.innerText=sa;
  scoreB.innerText=sb;
  gamesA.innerText=state.gA;
  gamesB.innerText=state.gB;
 
-
  serveA.innerText=state.serve==="A"?"🎾":"";
  serveB.innerText=state.serve==="B"?"🎾":"";
-
 
  serveA.classList.toggle("active", state.serve==="A");
  serveB.classList.toggle("active", state.serve==="B");
 }
-
 
 /* UNDO */
 function undoPoint(){
@@ -530,6 +490,25 @@ function undoPoint(){
  render();
 }
 
+/* ACTUAL RESET FUNCTION (no popup) */
+function hardReset(){
+ stopConfetti();
+ history=[];
+ state={pA:0,pB:0,gA:0,gB:0,mode:"NORMAL",adv:null,serve:null};
+ teamA.style.display="";
+ teamB.style.display="";
+ teamA.classList.remove("winner");
+ teamB.classList.remove("winner");
+ goldenGameBanner.style.display="none";
+ render();
+}
+
+/* RESET BUTTON - ONLY SHOWS POPUP */
+function resetMatch(){
+ if(confirm("Reset current match? All scores will be lost.")){
+  hardReset();
+ }
+}
 
 /* WINNER */
 function showWinner(){
@@ -547,7 +526,6 @@ function showWinner(){
  startConfetti();
 }
 
-
 /* RESULTS */
 function toggleResults(){
  let overlay = document.getElementById("resultsOverlay");
@@ -558,7 +536,6 @@ function toggleResults(){
   overlay.style.display = "block";
  }
 }
-
 
 function renderResults(){
  let table = document.getElementById("resultsTable");
@@ -585,7 +562,6 @@ function renderResults(){
  table.innerHTML = html;
 }
 
-
 /* EXPORT */
 function exportResults(){
  let wb = XLSX.utils.book_new();
@@ -597,7 +573,6 @@ function exportResults(){
  XLSX.utils.book_append_sheet(wb, ws, "Results");
  XLSX.writeFile(wb, "SSR_Tennis_Results.xlsx");
 }
-
 
 /* TIMER */
 let timerInt;
@@ -616,7 +591,6 @@ function stopTimer(){
  clearInterval(timerInt);
  timerOverlay.style.display="none";
 }
-
 
 /* CONFETTI */
 const c=document.getElementById("confetti");
@@ -650,23 +624,7 @@ function stopConfetti(){
  trophy.style.display="none";
 }
 
-
-/* MISC */
-function resetMatch(){
- if(confirm("Reset current match? All scores will be lost.")){
-  stopConfetti();
-  history=[];
-  state={pA:0,pB:0,gA:0,gB:0,mode:"NORMAL",adv:null,serve:null};
-  teamA.style.display="";
-  teamB.style.display="";
-  teamA.classList.remove("winner");
-  teamB.classList.remove("winner");
-  goldenGameBanner.style.display="none";
-  render();
- }
-}
-
-
+/* LOAD FILE */
 function loadFile(input){
  let r=new FileReader();
  r.onload=e=>{
@@ -681,24 +639,23 @@ function loadFile(input){
    }
    return [time, row[3] || '', row[4] || ''];
   });
+  hardReset(); // Use hardReset instead of resetMatch
   loadMatch(0);
   uploadBox.style.display="none";
  };
  r.readAsBinaryString(input.files[0]);
 }
 
-
 function loadMatch(i){
  if(!matches[i])return;
  matchIndex=i;
- resetMatch();
+ hardReset(); // Use hardReset instead of resetMatch
  nameA.innerText=matches[i][1];
  nameB.innerText=matches[i][2];
  nextMatch.innerText=matches[i+1]
   ?`NEXT MATCH – ${matches[i+1][0]} | ${matches[i+1][1]} vs ${matches[i+1][2]}`
   :"NO MORE MATCHES";
 }
-
 
 function confirmNextMatch(){
  if(confirm("Load next match? Current match will be reset.")){
@@ -707,14 +664,13 @@ function confirmNextMatch(){
  }
 }
 
-
 function swapSides(){
  let c=document.getElementById("court");
  c.insertBefore(c.children[1],c.children[0]);
 }
+
 nameA.onclick=()=>{if(!state.serve){state.serve="A";render();}}
 nameB.onclick=()=>{if(!state.serve){state.serve="B";render();}}
-
 
 render();
 </script>
