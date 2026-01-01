@@ -10,8 +10,8 @@
 *{box-sizing:border-box}
 body{
  margin:0;
- background:black;
- color:white;
+ background:white;
+ color:black;
  font-family:Arial,Helvetica,sans-serif;
  overflow:hidden;
 }
@@ -24,9 +24,8 @@ body{
  padding:12px 30px;
  font-size:3vw;
  font-weight:900;
- color:#00ffd5;
+ color:#000080;
  border-bottom:4px solid #00ffd5;
- text-shadow:0 0 20px #00ffd5;
 }
 .header div:nth-child(2){text-align:center;}
 .balls{font-size:3.5vw}
@@ -53,9 +52,9 @@ body{
 }
 
 .name{
- font-size:4vw;
+ font-size:5.5vw;
  font-weight:900;
- color:yellow;
+ color:#000080;
  cursor:pointer;
 }
 
@@ -69,17 +68,12 @@ body{
 /* SERVE ANIMATION */
 .server.active{
  opacity:1;
- animation:serveBounce 1s infinite alternate, serveGlow 1.2s infinite;
+ animation:serveBounce 1s infinite alternate;
 }
 
 @keyframes serveBounce{
  from{transform:translateY(0)}
  to{transform:translateY(-8px)}
-}
-@keyframes serveGlow{
- 0%{text-shadow:0 0 5px gold}
- 50%{text-shadow:0 0 25px gold,0 0 40px orange}
- 100%{text-shadow:0 0 5px gold}
 }
 
 /* SCORE */
@@ -95,6 +89,7 @@ body{
  padding:10px;
  font-size:clamp(6vw,18vw,22vw);
  line-height:1;
+ color:red;
 }
 
 /* UNDO */
@@ -107,14 +102,14 @@ body{
 }
 .undo:hover{transform:scale(1.2);opacity:1}
 
-.games{font-size:2.8vw;color:#00ffd5;font-weight:bold}
+.games{font-size:3.2vw;color:#000080;font-weight:900;text-shadow:1px 1px 2px rgba(0,0,0,0.3);}
 
 /* EFFECTS */
 .golden{
  font-size:clamp(4vw,10vw,12vw);
  color:gold;
+ font-weight:900;
  animation:wobble .6s infinite alternate;
- text-shadow:0 0 15px gold,0 0 50px orange;
 }
 @keyframes wobble{from{transform:rotate(-2deg)}to{transform:rotate(2deg)}}
 
@@ -122,12 +117,15 @@ body{
  background:#003300;
  box-shadow:0 0 80px #00ff00;
 }
+.winner .name{
+ color:white !important;
+}
 .winnersText{
  font-size:10vw;
  color:gold;
  animation:flash 1s infinite alternate;
- text-shadow:0 0 20px gold,0 0 60px orange;
 }
+
 @keyframes flash{from{opacity:.6}to{opacity:1}}
 
 /* CONTROLS */
@@ -139,14 +137,13 @@ button{
  cursor:pointer;
 }
 #goldenGameBanner{
- font-size:2.5vw;
+ font-size:2.8vw;
  font-weight:900;
  color:gold;
  display:none;
- animation:flash .7s infinite alternate;
- text-shadow:0 0 25px gold;
+ animation:wobble .7s infinite alternate;
 }
-.nextMatch{font-size:2.2vw;color:#00ffd5;margin-top:6px}
+.nextMatch{font-size:2.8vw;color:#000080;font-weight:900;text-shadow:1px 1px 2px rgba(0,0,0,0.3);margin-top:6px}
 
 /* BOTTOM */
 .bottomLeft{
@@ -197,7 +194,6 @@ button{
  color:gold;
  text-align:center;
  margin-bottom:20px;
- text-shadow:0 0 10px gold;
 }
 .resultsTable{
  width:100%;
@@ -233,19 +229,19 @@ button{
  right:0;
  width:50vw;
  height:100vh;
- background:black;
+ background:white;
  display:none;
  flex-direction:column;
  align-items:center;
  justify-content:center;
  border-left:4px solid #00ffd5;
  z-index:100;
+ color:black;
 }
 #timerDisplay{
  font-size:10vw;
  font-weight:900;
  color:#00ffd5;
- text-shadow:0 0 40px #00ffd5;
 }
 #timerOverlay button{margin-top:20px;font-size:2vw}
 
