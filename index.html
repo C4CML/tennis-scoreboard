@@ -176,6 +176,32 @@ button{
 .nextIcon{right:90px;background:red;color:white;box-shadow:0 0 20px red;}
 .resultsIcon{right:20px;}
 
+/* AUDIENCE MODE ICON */
+.audienceIcon{
+ position:fixed;
+ top:20px;
+ right:20px;
+ font-size:2.5vw;
+ background:#00ffd5;
+ color:black;
+ border:none;
+ width:55px;
+ height:55px;
+ border-radius:50%;
+ cursor:pointer;
+ box-shadow:0 0 20px #00ffd5;
+ display:inline-flex;
+ align-items:center;
+ justify-content:center;
+ z-index:50;
+ transition: all 0.3s ease;
+}
+.audienceIcon.active{
+ background:gold;
+ box-shadow:0 0 20px gold;
+ transform: rotate(180deg);
+}
+
 /* RESULTS OVERLAY - UPDATED TO WHITE BG WITH RED TEXT */
 #resultsOverlay{
  position:fixed;
@@ -347,6 +373,9 @@ canvas{
 <button class="iconBtn resultsIcon" onclick="toggleResults()" title="Results">📋</button>
 <button class="iconBtn nextIcon" onclick="confirmNextMatch()" title="Next Match">⏭️</button>
 
+<!-- AUDIENCE MODE BUTTON -->
+<button class="audienceIcon" id="audienceBtn" onclick="toggleAudienceMode()" title="Audience Mode">🔄</button>
+
 <div id="timerOverlay">
  <div id="timerDisplay">45</div>
  <button onclick="stopTimer()">STOP</button>
@@ -372,6 +401,36 @@ let state={pA:0,pB:0,gA:0,gB:0,mode:"NORMAL",adv:null,serve:null};
 let history=[];
 let matches=[],matchIndex=0;
 let results=[];
+let audienceMode = false;
+
+/* AUDIENCE MODE TOGGLE */
+function toggleAudienceMode(){
+ audienceMode = !audienceMode;
+ const btn = document.getElementById('audienceBtn');
+ btn.classList.toggle('active', audienceMode);
+ if(audienceMode){
+  // Flip teams for audience mode (laptop scorer sees correct sides, TV sees flipped)
+  swapTeamsForDisplay();
+ } else {
+  // Restore original order
+  restoreTeamsForDisplay();
+ }
+ render();
+}
+
+function swapTeamsForDisplay(){
+ const court = document.getElementById('court');
+ const teamA = document.getElementById('teamA');
+ const teamB = document.getElementById('teamB');
+ court.insertBefore(teamB, teamA);
+}
+
+function restoreTeamsForDisplay(){
+ const court = document.getElementById('court');
+ const teamA = document.getElementById('teamA');
+ const teamB = document.getElementById('teamB');
+ court.insertBefore(teamA, teamB);
+}
 
 /* POINT */
 function point(t){
@@ -500,6 +559,9 @@ function hardReset(){
  teamA.classList.remove("winner");
  teamB.classList.remove("winner");
  goldenGameBanner.style.display="none";
+ if(!audienceMode){
+  restoreTeamsForDisplay();
+ }
  render();
 }
 
